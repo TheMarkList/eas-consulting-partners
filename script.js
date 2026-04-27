@@ -20,12 +20,30 @@ window.addEventListener('scroll', () => {
 
 const form = document.getElementById('contactForm');
 if (form) {
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
-    if (!form.querySelector('#name').value.trim() || !form.querySelector('#email').value.trim()) return;
+    const name = form.querySelector('#name').value.trim();
+    const email = form.querySelector('#email').value.trim();
+    if (!name || !email) return;
+
     const btn = form.querySelector('button[type="submit"]');
     const t = btn.querySelector('.btn-text'), a = btn.querySelector('.btn-arrow');
-    btn.disabled = true; btn.style.background = '#2d6b4a'; t.textContent = 'Message Sent'; a.textContent = '✓';
-    setTimeout(() => { btn.disabled = false; btn.style.background = ''; t.textContent = 'Send to Elias'; a.textContent = '→'; form.reset(); }, 4000);
+    btn.disabled = true; t.textContent = 'Sending...'; a.textContent = '...';
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        t.textContent = 'Message Sent'; a.textContent = '✓'; btn.style.background = '#2d6b4a';
+        setTimeout(() => { btn.disabled = false; btn.style.background = ''; t.textContent = 'Send to Elias'; a.textContent = '→'; form.reset(); }, 4000);
+      } else {
+        t.textContent = 'Try Again'; a.textContent = '!'; btn.disabled = false;
+      }
+    } catch {
+      t.textContent = 'Try Again'; a.textContent = '!'; btn.disabled = false;
+    }
   });
 }
